@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <link rel="icon" href="../logot.png"/>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            background-image: url("Bckggame.gif");
+            background-size: cover;
+        }
+
+        .title-banner {
+            font-size: 2.5rem;
+            color: #FFD700;
+            background-color: #444;
+            padding: 15px 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-shadow: 0px 0px 8px #FFD700;
+            box-shadow: 0px 0px 10px #FFD700;
+            font-weight: bold;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #ffffff;
+            cursor: pointer;
+            border-radius: 8px;
+            -ms-user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        .winning-cell {
+            background-color: #4CAF50;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #ff5722;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #e64a19;
+        }
+
+        .back-button {
+            margin-top: 20px;
+        }
+
+        .back-button a {
+            text-decoration: none;
+            font-size: 18px;
+            color: #ff5722;
+            padding: 10px 20px;
+            border: 1px solid #ff5722;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button a:hover {
+            background-color: #ff5722;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="title-banner">TIC TAC TOE</div>
+
+    <div class="game-container">
+        <div class="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <button id="reset-button">Restart Game</button>
+        <p id="status"></p>
+        <div class="back-button">
+            <a href="index.html">Back to Home</a>
+        </div>
+    </div>
+
+    <audio id="background-music" loop autoplay>
+        <source src="game2.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        const cells = document.querySelectorAll('.cell');
+        const statusText = document.getElementById('status');
+        const resetButton = document.getElementById('reset-button');
+        const backgroundMusic = document.getElementById('background-music');
+
+        let board = Array(9).fill(null);
+        let currentPlayer = 'X';
+        let gameActive = true;
+
+        const winningPatterns = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+
+        function checkWinner(player) {
+            for (let pattern of winningPatterns) {
+                if (pattern.every(index => board[index] === player)) {
+                    pattern.forEach(index => {
+                        cells[index].classList.add('winning-cell');
+                    });
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function handleCellClick(event) {
+            const cell = event.target;
+            const cellIndex = cell.getAttribute('data-index');
+
+            if (board[cellIndex] || !gameActive) return;
+
+            board[cellIndex] = currentPlayer;
+            cell.textContent = currentPlayer;
+
+            if (checkWinner(currentPlayer)) {
+                statusText.textContent = `${currentPlayer} Wins!`;
+                gameActive = false;
+            } else if (board.every(cell => cell)) {
+                statusText.textContent = 'It\'s a Tie!';
+                gameActive = false;
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                statusText.textContent = `Player ${currentPlayer}'s Turn`;
+            }
+        }
+
+        function resetGame() {
+            board = Array(9).fill(null);
+            gameActive = true;
+            currentPlayer = 'X';
+            statusText.textContent = '';
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('winning-cell');
+            });
+        }
+
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+        resetButton.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>

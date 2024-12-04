@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <link rel="icon" href="../logot.png"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #2d2d2d;
+            color: #ffffff;
+            margin: 0;
+            height: 100vh;
+            justify-content: center;
+            background-image: url("Bckggame.gif");
+            background-size: cover;
+        }
+
+        .title-banner {
+            font-size: 2.5rem;
+            color: #FFD700;
+            background-color: #444;
+            padding: 15px 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-shadow: 0px 0px 8px #FFD700;
+            box-shadow: 0px 0px 10px #FFD700;
+            font-weight: bold;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #ffffff;
+            cursor: pointer;
+            border-radius: 8px;
+            -ms-user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        #status {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        #reset, #difficulty, #back {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            background-color: #ff5722;
+            color: #ffffff;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin: 10px;
+        }
+
+        #reset:hover, #difficulty:hover, #back:hover {
+            background-color: #e64a19;
+        }
+
+        .winning-cell {
+            background-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="title-banner">TIC TAC TOE</div>
+
+    <label for="difficulty">Choose Difficulty:</label>
+    <select id="difficulty">
+        <option value="easy">Easy</option>
+        <option value="normal">Normal</option>
+        <option value="hard">Hard</option>
+    </select>
+
+    <div id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+    <h2 id="status"></h2>
+    <button id="reset">Reset Game</button>
+    <button id="back" onclick="goBack()">Back to Home</button>
+
+    <audio id="background-music" loop autoplay>
+        <source src="game2.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        const cells = document.querySelectorAll('.cell');
+        const statusText = document.getElementById('status');
+        const resetButton = document.getElementById('reset');
+        const difficultySelect = document.getElementById('difficulty');
+        const backgroundMusic = document.getElementById('background-music');
+
+        let board = Array(9).fill(null);
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let difficulty = "easy";
+
+        cells.forEach(cell => {
+            cell.addEventListener('click', () => handleCellClick(cell));
+        });
+
+        resetButton.addEventListener('click', resetGame);
+        difficultySelect.addEventListener('change', (e) => {
+            difficulty = e.target.value;
+            resetGame();
+        });
+
+        function handleCellClick(cell) {
+            const index = cell.dataset.index;
+            if (board[index] || !gameActive) return;
+
+            board[index] = currentPlayer;
+            cell.textContent = currentPlayer;
+            if (checkWinner()) return;
+
+            currentPlayer = 'O';
+            botMove();
+        }
+
+        function botMove() {
+            let botMoveIndex;
+
+            if (difficulty === 'easy') {
+                botMoveIndex = getRandomMove();
+            } else if (difficulty === 'normal') {
+                botMoveIndex = Math.random() < 0.5 ? getSmartMove() : getRandomMove();
+            } else if (difficulty === 'hard') {
+                botMoveIndex = getSmartMove();
+            }
+
+            board[botMoveIndex] = currentPlayer;
+            cells[botMoveIndex].textContent = currentPlayer;
+
+            if (checkWinner()) return;
+
+            currentPlayer = 'X';
+        }
+
+        function getRandomMove() {
+            const emptyCells = board.map((value, index) => value === null ? index : null).filter(index => index !== null);
+            return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+
+        function getSmartMove() {
+            for (let player of ['O', 'X']) {
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === null) {
+                        board[i] = player;
+                        if (checkWinner(player, true)) {
+                            board[i] = null;
+                            return i;
+                        }
+                        board[i] = null;
+                    }
+                }
+            }
+            return getRandomMove();
+        }
+
+        function checkWinner(player = currentPlayer, simulate = false) {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            for (let pattern of winPatterns) {
+                if (pattern.every(index => board[index] === player)) {
+                    if (!simulate) {
+                        pattern.forEach(index => cells[index].classList.add('winning-cell'));
+                        statusText.textContent = `${player} wins!`;
+                        gameActive = false;
+                    }
+                    return true;
+                }
+            }
+            if (!simulate && isBoardFull()) {
+                statusText.textContent = "It's a draw!";
+                gameActive = false;
+            }
+            return false;
+        }
+
+        function isBoardFull() {
+            return board.every(cell => cell !== null);
+        }
+
+        function resetGame() {
+            board = Array(9).fill(null);
+            gameActive = true;
+            currentPlayer = 'X';
+            statusText.textContent = '';
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('winning-cell');
+            });
+        }
+
+        function goBack() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
