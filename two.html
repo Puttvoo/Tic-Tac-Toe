@@ -54,9 +54,6 @@
             color: #ffffff;
             cursor: pointer;
             border-radius: 8px;
-            -ms-user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
             user-select: none;
         }
 
@@ -98,6 +95,14 @@
             background-color: #ff5722;
             color: #fff;
         }
+
+        #scoreboard {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: space-around;
+            width: 300px;
+        }
     </style>
 </head>
 <body>
@@ -105,6 +110,12 @@
     <div class="title-banner">TIC TAC TOE</div>
 
     <div class="game-container">
+        <div id="scoreboard">
+            <div>Player X: <span id="score-x">0</span></div>
+            <div>Player O: <span id="score-o">0</span></div>
+        </div>
+
+
         <div class="board">
             <div class="cell" data-index="0"></div>
             <div class="cell" data-index="1"></div>
@@ -132,11 +143,15 @@
         const cells = document.querySelectorAll('.cell');
         const statusText = document.getElementById('status');
         const resetButton = document.getElementById('reset-button');
-        const backgroundMusic = document.getElementById('background-music');
+        const scoreXElement = document.getElementById('score-x');
+        const scoreOElement = document.getElementById('score-o');
 
         let board = Array(9).fill(null);
         let currentPlayer = 'X';
         let gameActive = true;
+
+        let scoreX = 0;
+        let scoreO = 0;
 
         const winningPatterns = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8], 
@@ -167,6 +182,7 @@
 
             if (checkWinner(currentPlayer)) {
                 statusText.textContent = `${currentPlayer} Wins!`;
+                updateScore(currentPlayer);
                 gameActive = false;
             } else if (board.every(cell => cell)) {
                 statusText.textContent = 'It\'s a Tie!';
@@ -174,6 +190,16 @@
             } else {
                 currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
                 statusText.textContent = `Player ${currentPlayer}'s Turn`;
+            }
+        }
+
+        function updateScore(winner) {
+            if (winner === 'X') {
+                scoreX++;
+                scoreXElement.textContent = scoreX;
+            } else if (winner === 'O') {
+                scoreO++;
+                scoreOElement.textContent = scoreO;
             }
         }
 
